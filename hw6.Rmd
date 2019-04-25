@@ -1,0 +1,67 @@
+---
+title: 'Homework #6'
+author: "Your Name"
+date: "4/16/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Top dogs
+
+In this homework, you will try to reproduce the fantastic infographic for [top dogs](https://informationisbeautiful.net/visualizations/best-in-show-whats-the-top-data-dog/), originally produced by David McCandless. The raw data can be found [here](https://docs.google.com/spreadsheets/d/1l_HfF5EaN-QgnLc2UYdCc7L2CVrk0p3VdGB1godOyhk/edit#gid=10). You can download this file by File -- Download As -- Microsoft Excel (.xlsx).
+
+**Submission instructions**: Create a folder named `ds202_hw6`, and name the RMarkDown file including your solutions `hw6.Rmd` under this folder. For the submission, create a GitHub repository named `ds202_hw6` under your GitHub account, and push both `hw6.Rmd` and the knitted `hw6.html` before the deadline. I will assume you use the same GitHub username as for your HW5 submission. The latest version of your homework appearing on GitHub before the deadline is graded. *It is crucial to follow the exact folder structure and file names*, so that your homework can be reproduced and graded by an automated script. This homework is **due on April 25** before class.
+
+1. Import the data and clean appropriately. To read in the data, you can use `readxl::read_xlsx('fileNameHere', sheet='sheetNameHere')`. Required data are in the sheets `Best in show` and `Best in show full sheet`. Take extra care on the column names and the first few rows of the data frame after read in.
+
+```{r}
+library(tidyverse)
+dogs_full = readxl::read_xlsx('C:/Users/Andrew Sundberg/Documents/DS202/ds202_hw6/KIB - Best in Show (public).xlsx', sheet='Best in show full sheet', skip = 3)
+
+names(dogs_full) = c('Breed', 1, 'Category', 2, 'datadog_score', 'Popularity', 'Pop_rank', 'LifetimeCost', 'LifetimeCostNormal', 3, 'IntelligenceRank', 'IntelligenceNormal', 'Logevity', 'Longevity_Normal', 'No_of_Genetic', 'Genetic_Ailments', 'PurchasePrice', 'PurchasePriceNormal', 'FoodCostPerYear', 'FoodCostNormal', 'Grooming', 'GroomingNormal', 'KidFriendly', 'KidFriendlyNormal', 4, 'MegaScoreWithKids', 'MegaRankNoKids', 'MegaRankWithKids', 'MegaScore', 'PopularityRank', 5, 'Size', 'Weight_KG', 'Weight_LBS', 'ShoulderHeight_CM', 'ShoulderHeight_IN', 6, 'Note', 'Source', 'Link', 'Intelligence', 'Repetitions', 'ObeyFirstCommand', 'LongevitySampSize', 'GeneticDiseases', 'CongenitalAilments', 'Exclude', 'Abandoned', 7, 'Lifetime_Cost', 'LifetimeCost_Normal', 'AvgPurchasePrice', 'PriceBracket', 'MinPrice_Dollars', 'MaxPrice_Dollars', 'FoodWeek_Pounds', 'MinPrice_Pounds', 'MaxPrice_Pounds', 'FoodWeek_Dollars', 'FoodYear_Dollars', 'FoodLifetime_Dollars', 8, 'OtherCostsLifetime', 'CostPerYear_Dollars', 'CostPerYear_Pounds', 'AvgToyPerYear_Pounds', 'PetSittersYear_Pounds', 'GroomingYear_Pounds', 'VetYear_Pounds', 'KennelsYear_Pounds', 'OneOffs_Dollars', 9, 10, 11, 12)
+
+dogs = readxl::read_xlsx('C:/Users/Andrew Sundberg/Documents/DS202/ds202_hw6/KIB - Best in Show (public).xlsx', sheet='Best in show', skip = 6)
+
+names(dogs) = c('Breed', 13, 14, 15, 'Category', 16, 'PopularityRank', 17, 'IntelligenceRank', 'IntelligenceCategory', 'Repetiions', 'ObeyFirst', 18, 'LifeExpectancy', 'SampleSize', 19, 'CongenitalAilments', 'Num_ConAil', 'ConAil_Details', 20, 'Cuteness', 21, 'LifetimeCost', 'AvgPrice', 'PriceBracket', 'MinCost_Dollars', 'MaxCost_Dollars', 'FoodPerWeek_Pounds', 'MinCost_Pounds', 'MaxCost_Pounds', 'FoodPerWeek_Dollars', 'FoodPerLifetime_Dollars', 'TotalLifetime_Dollars', 'TotalYear_Dollars', 'TotalYear_Pounds', 'TreatsPerYear_Pounds', 'PetSittersYear_Pounds', 'GroomingYear_Pounds', 'VetYear_Pounds', 'KennelsYear_Pounds', 'OneOffs_Dollars', 22, 'GroomingRequired', 'SuitabilityForKids', 23, 'Size', 'Weight_KG', 'Weight_LBS', 'ShoulderHeight_CM', 'ShoulderHeight_IN', 24, 'Note', 'Source', 'Link', 25)
+
+
+total_dogs = inner_join(dogs_full, dogs, by = 'Breed')
+for (i in 1:nrow(total_dogs)){
+  if(total_dogs$Size.y[i] == 'small') {total_dogs$Size1[i] = 2.5}
+  else if(total_dogs$Size.y[i] == 'medium') {total_dogs$Size1[i] = 3}
+  else if(total_dogs$Size.y[i] == 'large') {total_dogs$Size1[i] = 4}
+  else {total_dogs$Size1[i] = NA}
+}
+```
+
+
+2. Create a graphics similar to the  [top dogs](https://informationisbeautiful.net/visualizations/best-in-show-whats-the-top-data-dog/) figure. Your figure need to display the following information with appropriate plotting elements:
+
+```{r}
+library(ggplot2)
+library(ggrepel)
+
+
+total_dogs$Intelligence = factor(total_dogs$Intelligence)
+levels(total_dogs$Intelligence)
+ggplot(total_dogs, aes(x = datadog_score, y = Popularity * -1, label = Breed, color = Category.x)) + geom_text_repel(size = total_dogs$Size1, angle = total_dogs$IntelligenceNormal, na.rm = T) + xlab("Data Score") + ylab("Popularity") + ggtitle("Mega Score vs. Popularity", subtitle = "size = size, angle = intelligence")
+```
+
+
+- breed of dog
+- type of dog (work, toy, etc.)
+- size of dog
+- data score 
+- popularity
+- intelligence of the dog
+- appropriate legends & explanation
+
+Hints and Notes:
+
+- The breed of dog can be displayed without the silhouttes (text only is fine)
+- Avoid (too much) overlap!
+- Choose a good color scheme.
+- Your submission is supposed to be fully reproducible, i.e. the TA and I will 'knit' your submission in RStudio. 
